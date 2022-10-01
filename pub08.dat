@@ -1,0 +1,6 @@
+# this is also a comment line
+4
+right-down-not right-left right-left left-down
+right-top left-down initial-right left-top-not
+top-down right-top left-down empty-cell
+goal-left right-left left-top empty-cell

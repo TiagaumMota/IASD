@@ -1,0 +1,7 @@
+# this is a first comment line
+# this is a second comment
+4
+right-down right-left right-left initial-left
+right-top empty-cell right-left left-down
+goal-right right-left right-left left-top
+empty-cell empty-cell right-left empty-cell
