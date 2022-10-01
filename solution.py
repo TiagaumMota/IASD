@@ -1,4 +1,13 @@
+from mimetypes import init
 import search
+
+class Tile:
+    
+    def __init__(self, text: str) -> None:
+        self.text = text
+
+    def __repr__(self):
+        return self.text
 
 class RTBProblem(search.Problem):
 
@@ -25,31 +34,63 @@ class RTBProblem(search.Problem):
                     self.final = (i,j)
 
             self.puzzle.append(temp_list)
+    
+    def next_direction(self, tile: Tile, origin: str) -> str:
 
-        '''for l in self.puzzle:
-            print(l)
-        print(self.initial)
-        print(self.final)'''
-        
-    def is_solution(self) -> int:
+        l = tile.text.split("-")
+        l.remove(origin)
+
+        if "right" in l:
+            return "right"
+        elif "left" in l:
+            return "left"
+        elif "top" in l:
+            return "top"
+        elif "down" in l:
+            return "down"
+
+    def isSolution(self) -> int:
         
         initial = self.puzzle[self.initial[0]][self.initial[1]]
-        print(initial)
+
+        if "right" in initial.text:
+            next_tile_pos = (self.initial[0], self.initial[1]+1)
+            origin = "left"
+        elif "left" in initial.text:
+            next_tile_pos = (self.initial[0], self.initial[1]-1)
+            origin = "right"
+        elif "top" in initial.text:
+            next_tile_pos = (self.initial[0]-1, self.initial[1])
+            origin = "down"
+        elif "down" in initial.text:
+            next_tile_pos = (self.initial[0]+1, self.initial[1])
+            origin = "top"
 
 
-class Tile:
-    
-    def __init__(self, text: str) -> None:
-        self.text = text
+        while(True):
+            try:
+                next_tile = self.puzzle[next_tile_pos[0]][next_tile_pos[1]]
 
-    def __repr__(self):
-        return self.text
+                if origin not in next_tile.text:
+                    return 0
+                elif "goal" in next_tile.text:
+                    return 1
+                else:
 
+                    direction = self.next_direction(next_tile, origin)
 
-if __name__ == "__main__":
-    
-    with open("pub03.dat", "r") as f:
-        t = RTBProblem()
-        t.load(f)
+                    if "right" in direction:
+                        next_tile_pos = (next_tile_pos[0], next_tile_pos[1]+1)
+                        origin = "left"
+                    elif "left" in direction:
+                        next_tile_pos = (next_tile_pos[0], next_tile_pos[1]-1)
+                        origin = "right"
+                    elif "top" in direction:
+                        next_tile_pos = (next_tile_pos[0]-1, next_tile_pos[1])
+                        origin = "down"
+                    elif "down" in direction:
+                        next_tile_pos = (next_tile_pos[0]+1, next_tile_pos[1])
+                        origin = "top"
 
-    t.is_solution()
+            except Exception as e:
+                return 0
