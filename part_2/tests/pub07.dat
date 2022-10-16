@@ -1,0 +1,9 @@
+# Level 1 Puzzle 10, App: modified to reduce complexity
+# Cell 0,3: empty-cell -> no-passage-not
+# Cell 1,0: right-top -> right-top-not
+4
+initial-down left-down empty-cell no-passage-not
+right-top-not right-down left-down goal-down
+top-down empty-cell right-left empty-cell
+top-down right-top left-top top-down
+
