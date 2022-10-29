@@ -1,0 +1,5 @@
+4
+initial-right right-left top-down left-down-not
+empty-cell top-down empty-cell right-left
+right-left right-left empty-cell top-down-not
+goal-right right-left-not right-left left-top-not

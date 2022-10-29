@@ -1,0 +1,6 @@
+5
+empty-cell right-down left-down no-passage left-down
+top-down-not top-down top-down right-down top-down
+top-down right-top initial-left goal-top top-down
+left-down right-down empty-cell left-down top-down
+right-top right-top left-top right-top left-top

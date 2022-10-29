@@ -1,0 +1,6 @@
+# from app 1-35, 7, 8.6sUC
+4
+right-down-not empty-cell empty-cell left-down
+empty-cell top-down right-left right-left
+top-down-not goal-right left-top top-down
+initial-top no-passage right-left no-passage
