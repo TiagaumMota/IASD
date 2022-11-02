@@ -63,7 +63,7 @@ class RTBProblem(search.Problem):
         """
         
         # Deepcopying the current state
-        new_state = {key: value[:] for key, value in state.items()}
+        new_state = list(list(i) for i in state)
 
         # Compute the coordinates the empty cell is moving to
         row, col = self.nextcoords[action.dir](action.row, action.col)
@@ -71,6 +71,7 @@ class RTBProblem(search.Problem):
         # Switching cells
         new_state[row][col], new_state[action.row][action.col] = new_state[action.row][action.col], new_state[row][col]
 
+        new_state = tuple(tuple(i) for i in new_state)
         return new_state
 
     
@@ -101,11 +102,6 @@ class RTBProblem(search.Problem):
         # Turn the puzzle into a matrix
         puzzle = [x.split(' ') for x in puzzle]
 
-        # Convert the matrix to be a dictionary where each key is the row number
-        # and the value a list containing all cells of that row
-        puzzle = {idx: puzzle[idx] for idx in range(len(puzzle))}
-
-
         # Searching and saving the starting tile's coordinates
         for row in range(self.size):
             for col in range(self.size):
@@ -135,9 +131,80 @@ class RTBProblem(search.Problem):
                 if ("down" in puzzle[row][col]):
                     cell_specs.add('d')
                 
-                puzzle[row][col] = cell_specs  
+                puzzle[row][col] = frozenset(cell_specs)
+        
+        self.initial = tuple(tuple(i) for i in puzzle)
 
-        self.initial = puzzle
+        """
+        state = self.initial
+        cost = 0
+
+        for row in range(self.size):
+            for col in range(self.size):
+                
+                if ('m' not in state[row][col] or len(state[row][col]) <= 1): continue
+
+                if(row+1 < self.size and self.origins['d'] in state[row+1][col]): continue
+                if(row-1 >= 0        and self.origins['t'] in state[row-1][col]): continue
+                if(col+1 < self.size and self.origins['r'] in state[row][col+1]): continue
+                if(col-1 >= 0        and self.origins['l'] in state[row][col-1]): continue
+
+                print(state[row][col])
+                print("(",row,",",col,") is an alone\n")
+                cost += 1
+        
+        print("\ntotal cost = ",cost)
+        """
+        
+        """
+        state = self.initial 
+
+        visited = set()
+
+        direction = None
+        origin    = None
+        tile      = None
+
+        # Initial row and collumn are the ones of the starting tile
+        row = self.init[0]
+        col = self.init[1]
+
+        visited.add((row,col))
+
+        # Catching the string of the starting tile
+        tile_init = state[row][col]
+
+        # Gathering the direction of the starting tile
+        direction = self.getNextDirection(tile_init, "")
+
+        # Also saving where the starting tile is positioned in relation to the tile it is pointing at
+        origin = self.origins[direction]
+
+        while (True):
+
+            # Computing the next tile's coordinates
+            prev_row, prev_col = row,col
+            (row, col) = self.nextcoords[direction](row, col)
+
+            # Checking if the next tile is within boundaries
+            if (not(row >= 0 and row < self.size and col >= 0 and col < self.size)):
+                return self.closest(state, (prev_row, prev_col), visited)
+
+            # Gathering next tile's set (with cell info)
+            visited.add((row,col))
+            tile = state[row][col]
+
+            # Checking if new tile is connected to the previous one
+            if origin not in tile:
+                return self.closest(state, (prev_row,prev_col), visited)
+            else:
+                # Compute direction for the next tile
+                direction = self.getNextDirection(tile, origin)
+
+                # Save the origin tile to know where we were
+                origin = self.origins[direction]
+
+        """
 
 
     def goal_test(self, state):
@@ -220,35 +287,24 @@ class RTBProblem(search.Problem):
                     continue
                 
                 # Check if the surrounding cells are movable
-                # down
-                if(row+1 < self.size and 'm' in state[row+1][col]):
-                    actions.append(action(row, col, 'd'))
-
-                # top
-                if(row-1 >= 0 and 'm' in state[row-1][col]):
-                    actions.append(action(row, col, 't'))
-
-                # right
-                if(col+1 < self.size and 'm' in state[row][col+1]):
-                    actions.append(action(row, col, 'r'))
 
                 # left
                 if(col-1 >= 0 and 'm' in state[row][col-1]):
                     actions.append(action(row, col, 'l'))
 
+                # right
+                if(col+1 < self.size and 'm' in state[row][col+1]):
+                    actions.append(action(row, col, 'r'))
+
+                # top
+                if(row-1 >= 0 and 'm' in state[row-1][col]):
+                    actions.append(action(row, col, 't'))
+
+                # down
+                if(row+1 < self.size and 'm' in state[row+1][col]):
+                    actions.append(action(row, col, 'd'))
+
         return actions
-    
-    
-    def setAlgorithm(self):
-        """Sets the uninformed search algorithm chosen."""
-        
-        self.algorithm = search.astar_search
-
-    
-    def solve(self):
-        """Calls the uninformed search algorithm chosen."""
-
-        return self.algorithm(self)
 
 
     def getNextDirection(self, tile: str, origin: str):
@@ -268,22 +324,30 @@ class RTBProblem(search.Problem):
         if origin != 'l' and 'l' in tile : return 'l'
         if origin != 't' and 't' in tile : return 't'
         if origin != 'd' and 'd' in tile : return 'd'
+        #print(tile, origin)
 
     def h(self, node):
-        """
-        """
+        """ This heuristic works like this:
+        . . .
+        It is consistent/not consistent because...
+        It is admissible/not admissible because..."""
+        
+        state = node.state 
 
-        # Computing the next tile's coordinates
+        visited = set()
+
         direction = None
         origin    = None
         tile      = None
 
         # Initial row and collumn are the ones of the starting tile
-        r1 = self.init[0]
-        c1 = self.init[1]
+        row = self.init[0]
+        col = self.init[1]
+
+        visited.add((row,col))
 
         # Catching the string of the starting tile
-        tile_init = node.state[r1][c1]
+        tile_init = state[row][col]
 
         # Gathering the direction of the starting tile
         direction = self.getNextDirection(tile_init, "")
@@ -294,85 +358,67 @@ class RTBProblem(search.Problem):
         while (True):
 
             # Computing the next tile's coordinates
-            (r1, c1) = self.nextcoords[direction](r1, c1)
+            prev_row, prev_col = row,col
+            (row, col) = self.nextcoords[direction](row, col)
 
             # Checking if the next tile is within boundaries
-            if (not(r1 >= 0 and r1 < self.size and c1 >= 0 and c1 < self.size)):
-                break
+            if (not(row >= 0 and row < self.size and col >= 0 and col < self.size)):
+                return self.closest(state, (prev_row, prev_col), visited, origin)
 
             # Gathering next tile's set (with cell info)
-            tile = node.state[r1][c1]
+            visited.add((row,col))
+            tile = state[row][col]
 
             # Checking if new tile is connected to the previous one
             if origin not in tile:
-                break
-
-            # Checking if this new tile is the goal cell
-            elif 'g' in tile:
-                break
+                return self.closest(state, (prev_row,prev_col), visited, origin)
+            elif "g" in tile:
+                return 0
             else:
                 # Compute direction for the next tile
                 direction = self.getNextDirection(tile, origin)
 
                 # Save the origin tile to know where we were
+                
                 origin = self.origins[direction]
 
+    
+    def closest(self, state, tile, visited, origin):
 
-        # Computing the next tile's coordinates
-        direction = None
-        origin    = None
-        tile      = None
+        visited.add(tile)
+        queue = [tile]
+        cost = 1
 
-        # Initial row and collumn are the ones of the starting tile
-        r2 = self.goal[0]
-        c2 = self.goal[1]
+        while queue:
+            
+            x,y = queue.pop(0)
+            directions = [[1,0],[-1,0],[0,1],[0,-1]]
 
-        # Catching the string of the starting tile
-        tile_goal = node.state[r2][c2]
+            for l,r in directions:
+                if x+l < self.size and y+r < self.size and (x+l,y+r) not in visited:
+                    if origin in state[x+l][y+r]:
+                        return cost
+                    queue.append((x+l,y+r))
+                    visited.add((x+l,y+r))
 
-        # Gathering the direction of the starting tile
-        direction = self.getNextDirection(tile_goal, "")
+            cost += 1
 
-        # Also saving where the starting tile is positioned in relation to the tile it is pointing at
-        origin = self.origins[direction]
-
-        while (True):
-
-            # Computing the next tile's coordinates
-            (r2, c2) = self.nextcoords[direction](r2, c2)
-
-            # Checking if the next tile is within boundaries
-            if (not(r2 >= 0 and r2 < self.size and c2 >= 0 and c2 < self.size)):
-                break
-
-            # Gathering next tile's set (with cell info)
-            tile = node.state[r2][c2]
-
-            # Checking if new tile is connected to the previous one
-            if origin not in tile:
-                break
-
-            # Checking if this new tile is the goal cell
-            elif 'g' in tile:
-                break
-            else:
-                # Compute direction for the next tile
-                direction = self.getNextDirection(tile, origin)
-
-                # Save the origin tile to know where we were
-                origin = self.origins[direction]
-
-        print(f"Init: {r1},{c1} - Goal: {r2},{c2}")
-        return abs(r1-r2) + abs(c1-c2)
+        return cost
 
 
-import time
-start = time.time()
+
+
+"""import time
 fh = open("../tests/pub10.dat", 'r')
 rtb = RTBProblem()
 rtb.load(fh)
-rtb.setAlgorithm()
-print(rtb.solve())
+start = time.time()
+print("SOLUTION:\n", search.astar_search(rtb))
 end = time.time()
-print("time = ", end - start)
+print("\ntime1 = ", end - start)
 
+start = time.time()
+print("SOLUTION:\n", search.uniform_cost_search(rtb))
+end = time.time()
+print("\ntime2 = ", end - start)
+"""
