@@ -332,17 +332,18 @@ class RTBProblem(search.Problem):
         It is consistent/not consistent because...
         It is admissible/not admissible because..."""
         
-        state = node.state 
+        init_cost = self.add_to_visited(node.state, self.init)
+        goal_cost = self.add_to_visited(node.state, self.goal)
+
+        return init_cost + goal_cost
+
+    def add_to_visited(self, state, tile):
 
         visited = set()
 
-        direction = None
-        origin    = None
-        tile      = None
-
         # Initial row and collumn are the ones of the starting tile
-        row = self.init[0]
-        col = self.init[1]
+        row = tile[0]
+        col = tile[1]
 
         visited.add((row,col))
 
@@ -351,7 +352,7 @@ class RTBProblem(search.Problem):
 
         # Gathering the direction of the starting tile
         direction = self.getNextDirection(tile_init, "")
-
+        #print(direction)
         # Also saving where the starting tile is positioned in relation to the tile it is pointing at
         origin = self.origins[direction]
 
@@ -372,20 +373,21 @@ class RTBProblem(search.Problem):
             # Checking if new tile is connected to the previous one
             if origin not in tile:
                 return self.closest(state, (prev_row,prev_col), visited, origin)
-            elif "g" in tile:
+            elif "g" in tile or "i" in tile:
                 return 0
             else:
+                #Add new tile coordinates to set
+
                 # Compute direction for the next tile
                 direction = self.getNextDirection(tile, origin)
 
                 # Save the origin tile to know where we were
-                
                 origin = self.origins[direction]
 
-    
+
     def closest(self, state, tile, visited, origin):
 
-        visited.add(tile)
+        #visited.add(tile)
         queue = [tile]
         cost = 1
 
@@ -408,8 +410,8 @@ class RTBProblem(search.Problem):
 
 
 
-"""import time
-fh = open("../tests/pub10.dat", 'r')
+import time
+fh = open("../tests/pub01.dat", 'r')
 rtb = RTBProblem()
 rtb.load(fh)
 start = time.time()
@@ -421,4 +423,3 @@ start = time.time()
 print("SOLUTION:\n", search.uniform_cost_search(rtb))
 end = time.time()
 print("\ntime2 = ", end - start)
-"""
