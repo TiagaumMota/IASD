@@ -287,22 +287,24 @@ class RTBProblem(search.Problem):
                     continue
                 
                 # Check if the surrounding cells are movable
-
-                # left
-                if(col-1 >= 0 and 'm' in state[row][col-1]):
-                    actions.append(action(row, col, 'l'))
-
+                
                 # right
                 if(col+1 < self.size and 'm' in state[row][col+1]):
                     actions.append(action(row, col, 'r'))
 
+                # left
+                if(col-1 >= 0 and 'm' in state[row][col-1]):
+                    actions.append(action(row, col, 'l'))
+                    
                 # top
                 if(row-1 >= 0 and 'm' in state[row-1][col]):
                     actions.append(action(row, col, 't'))
-
-                # down
+                    
+                 # down
                 if(row+1 < self.size and 'm' in state[row+1][col]):
                     actions.append(action(row, col, 'd'))
+
+                
 
         return actions
 
@@ -335,7 +337,7 @@ class RTBProblem(search.Problem):
         init_cost = self.add_to_visited(node.state, self.init)
         goal_cost = self.add_to_visited(node.state, self.goal)
 
-        return init_cost + goal_cost
+        return min(init_cost, goal_cost)
 
     def add_to_visited(self, state, tile):
 
@@ -409,7 +411,7 @@ class RTBProblem(search.Problem):
 
 
 
-
+"""
 import time
 fh = open("../tests/pub01.dat", 'r')
 rtb = RTBProblem()
@@ -422,4 +424,4 @@ print("\ntime1 = ", end - start)
 start = time.time()
 print("SOLUTION:\n", search.uniform_cost_search(rtb))
 end = time.time()
-print("\ntime2 = ", end - start)
+print("\ntime2 = ", end - start)"""
